@@ -1,4 +1,4 @@
-export const APP_NAME = 'Sonnet 4.6' as const
+export const APP_NAME = 'Opus 4.6' as const
 
 export const AUTH_COOKIE_NAME = 'auth_session' as const
 
@@ -16,7 +16,7 @@ export const MODELS = [
 
 export type ModelId = typeof MODELS[number]['id']
 
-export const DEFAULT_MODEL_ID: ModelId = 'claude-sonnet-4-6'
+export const DEFAULT_MODEL_ID: ModelId = 'claude-opus-4-8'
 
 // Model IDs that are allowed in the chat API (server-side validation)
 export const ALLOWED_MODEL_IDS = MODELS.map((m) => m.id) as string[]
