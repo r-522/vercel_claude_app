@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { UIMessage, TextUIPart } from 'ai'
+import type { UIMessage, TextUIPart, FileUIPart } from 'ai'
 import { MarkdownRenderer } from './MarkdownRenderer'
 import { LoadingDots } from '@/components/ui/LoadingDots'
 
@@ -17,10 +17,18 @@ function getTextContent(message: UIMessage): string {
     .join('')
 }
 
+function getFileParts(message: UIMessage): FileUIPart[] {
+  return message.parts.filter((p): p is FileUIPart => p.type === 'file')
+}
+
 function isStreamingPart(message: UIMessage): boolean {
   return message.parts.some(
     (p): p is TextUIPart => p.type === 'text' && p.state === 'streaming',
   )
+}
+
+function imageUrl(part: FileUIPart): string {
+  return part.url
 }
 
 function CopyButton({ text }: { text: string }) {
@@ -49,6 +57,7 @@ function CopyButton({ text }: { text: string }) {
 
 export function MessageItem({ message, isStreaming }: MessageItemProps) {
   const text = getTextContent(message)
+  const fileParts = getFileParts(message)
   const activelyStreaming = isStreaming && isStreamingPart(message)
 
   if (message.role === 'user') {
@@ -59,12 +68,30 @@ export function MessageItem({ message, isStreaming }: MessageItemProps) {
             Query
           </span>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-[var(--foreground)] leading-relaxed whitespace-pre-wrap">
-              {text}
-            </p>
-            <div className="mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-              <CopyButton text={text} />
-            </div>
+            {/* Attached images */}
+            {fileParts.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-2">
+                {fileParts.map((part, i) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    key={i}
+                    src={imageUrl(part)}
+                    alt={part.filename ?? `Image ${i + 1}`}
+                    className="max-h-48 max-w-xs rounded-md border border-[var(--border)] object-contain"
+                  />
+                ))}
+              </div>
+            )}
+            {text && (
+              <p className="text-sm font-medium text-[var(--foreground)] leading-relaxed whitespace-pre-wrap">
+                {text}
+              </p>
+            )}
+            {(text || fileParts.length > 0) && (
+              <div className="mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                {text && <CopyButton text={text} />}
+              </div>
+            )}
           </div>
         </div>
       </div>

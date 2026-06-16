@@ -1,27 +1,41 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
+import type { FileUIPart } from 'ai'
+import { MODELS, DEFAULT_MODEL_ID } from '@/lib/constants'
+import type { ModelId } from '@/lib/constants'
 import { MessageList } from './MessageList'
 import { InputArea } from './InputArea'
 
 interface ChatInterfaceProps {
-  displayName: string
+  appName: string
 }
 
-export function ChatInterface({ displayName }: ChatInterfaceProps) {
+export function ChatInterface({ appName }: ChatInterfaceProps) {
   const router = useRouter()
   const [input, setInput] = useState('')
+  const [selectedModel, setSelectedModel] = useState<ModelId>(DEFAULT_MODEL_ID)
   const [isDark, setIsDark] = useState(
     () =>
       typeof document !== 'undefined' &&
       document.documentElement.classList.contains('dark'),
   )
 
+  // Recreate transport when model changes so body carries the current modelId
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport({
+        api: '/api/chat',
+        body: { modelId: selectedModel },
+      }),
+    [selectedModel],
+  )
+
   const { messages, sendMessage, status, error, regenerate } = useChat({
-    transport: new DefaultChatTransport({ api: '/api/chat' }),
+    transport,
     onError: (err) => {
       if (err.message.includes('401') || err.message.includes('Unauthorized')) {
         router.replace('/auth')
@@ -31,12 +45,25 @@ export function ChatInterface({ displayName }: ChatInterfaceProps) {
 
   const isLoading = status === 'submitted' || status === 'streaming'
 
-  const handleSubmit = useCallback(() => {
-    const text = input.trim()
-    if (!text || isLoading) return
-    sendMessage({ text })
-    setInput('')
-  }, [input, isLoading, sendMessage])
+  const handleSubmit = useCallback(
+    (fileUIParts: FileUIPart[]) => {
+      const text = input.trim()
+      if ((!text && fileUIParts.length === 0) || isLoading) return
+
+      if (text && fileUIParts.length > 0) {
+        sendMessage({ text, files: fileUIParts })
+      } else if (text) {
+        sendMessage({ text })
+      } else {
+        sendMessage({ files: fileUIParts })
+      }
+
+      setInput('')
+    },
+    [input, isLoading, sendMessage],
+  )
+
+  const handleModelChange = (id: ModelId) => setSelectedModel(id)
 
   const toggleTheme = () => {
     const next = !isDark
@@ -58,6 +85,9 @@ export function ChatInterface({ displayName }: ChatInterfaceProps) {
     window.location.reload()
   }
 
+  const selectedModelDisplay =
+    MODELS.find((m) => m.id === selectedModel)?.display ?? selectedModel
+
   return (
     <div className="flex flex-col h-full bg-[var(--background)]">
       {/* Top navigation bar */}
@@ -65,25 +95,43 @@ export function ChatInterface({ displayName }: ChatInterfaceProps) {
         <div className="flex items-center gap-3">
           <div className="w-6 h-6 bg-slate-800 dark:bg-slate-200 rounded-[3px] flex-shrink-0" />
           <span className="text-sm font-semibold tracking-tight text-[var(--foreground)]">
-            {displayName}
+            {appName}
           </span>
           <span className="hidden sm:inline-block text-[10px] font-medium text-[var(--text-muted)] border border-[var(--border)] rounded px-1.5 py-0.5 uppercase tracking-widest">
             Knowledge Base
           </span>
         </div>
 
-        <nav className="flex items-center gap-1">
+        <nav className="flex items-center gap-1.5">
+          {/* Model selector */}
+          <select
+            value={selectedModel}
+            onChange={(e) => handleModelChange(e.target.value as ModelId)}
+            disabled={isLoading}
+            aria-label="Select model"
+            className="text-xs text-[var(--text-muted)] bg-[var(--surface)] border border-[var(--border)] rounded px-2 py-1 outline-none hover:border-slate-400 dark:hover:border-slate-500 transition-colors disabled:opacity-50 cursor-pointer"
+          >
+            {MODELS.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.display}
+              </option>
+            ))}
+          </select>
+
+          {/* Active model badge (mobile) */}
+          <span className="sm:hidden text-[10px] text-[var(--text-muted)] border border-[var(--border)] rounded px-1.5 py-0.5">
+            {selectedModelDisplay}
+          </span>
+
+          <div className="w-px h-4 bg-[var(--border)] mx-0.5" />
+
           {/* Dark mode toggle */}
           <button
             onClick={toggleTheme}
             className="p-1.5 rounded text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors"
             aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
           >
-            {isDark ? (
-              <SunIcon />
-            ) : (
-              <MoonIcon />
-            )}
+            {isDark ? <SunIcon /> : <MoonIcon />}
           </button>
 
           {/* New session */}
@@ -96,7 +144,7 @@ export function ChatInterface({ displayName }: ChatInterfaceProps) {
             </button>
           )}
 
-          <div className="w-px h-4 bg-[var(--border)] mx-1" />
+          <div className="w-px h-4 bg-[var(--border)] mx-0.5" />
 
           {/* Sign out */}
           <button
@@ -123,7 +171,7 @@ export function ChatInterface({ displayName }: ChatInterfaceProps) {
         </div>
       )}
 
-      {/* Message list — fills remaining space */}
+      {/* Message list */}
       <MessageList messages={messages} isStreaming={isLoading} />
 
       {/* Input area */}

@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { verifyAuthCookie } from '@/lib/auth/cookies'
-import { AUTH_COOKIE_NAME, DISPLAY_NAME } from '@/lib/constants'
+import { AUTH_COOKIE_NAME, APP_NAME } from '@/lib/constants'
 import { AuthForm } from '@/components/auth/AuthForm'
 
 export default async function AuthPage() {
@@ -20,7 +20,7 @@ export default async function AuthPage() {
           <div className="inline-flex items-center gap-2.5 mb-3">
             <div className="w-7 h-7 bg-slate-800 dark:bg-slate-200 rounded-[3px] flex-shrink-0" />
             <span className="text-base font-semibold tracking-tight text-slate-900 dark:text-slate-100">
-              {DISPLAY_NAME}
+              {APP_NAME}
             </span>
           </div>
           <p className="text-xs text-[var(--text-muted)] tracking-wide uppercase">
