@@ -5,16 +5,12 @@ import { useRouter } from 'next/navigation'
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
 import type { FileUIPart } from 'ai'
-import { MODELS, DEFAULT_MODEL_ID } from '@/lib/constants'
+import { MODELS, DEFAULT_MODEL_ID, getAppName } from '@/lib/constants'
 import type { ModelId } from '@/lib/constants'
 import { MessageList } from './MessageList'
 import { InputArea } from './InputArea'
 
-interface ChatInterfaceProps {
-  appName: string
-}
-
-export function ChatInterface({ appName }: ChatInterfaceProps) {
+export function ChatInterface() {
   const router = useRouter()
   const [input, setInput] = useState('')
   const [selectedModel, setSelectedModel] = useState<ModelId>(DEFAULT_MODEL_ID)
@@ -87,6 +83,8 @@ export function ChatInterface({ appName }: ChatInterfaceProps) {
 
   const selectedModelDisplay =
     MODELS.find((m) => m.id === selectedModel)?.display ?? selectedModel
+
+  const appName = getAppName(selectedModel)
 
   return (
     <div className="flex flex-col h-full bg-[var(--background)]">
