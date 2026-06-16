@@ -7,7 +7,9 @@ export const RATE_LIMIT_MAX_ATTEMPTS = 10
 export const RATE_LIMIT_WINDOW_MS = 900000 // 15 minutes in ms
 
 export const MODELS = [
-  { id: 'claude-haiku-4-5-20251001', display: 'Haiku 4.5', family: 'haiku' },
+  { id: 'claude-opus-4-6',           display: 'Opus 4.6',   family: 'opus'   },
+  { id: 'claude-sonnet-4-6',         display: 'Sonnet 4.6', family: 'sonnet' },
+  { id: 'claude-haiku-4-5-20251001', display: 'Haiku 4.5',  family: 'haiku'  },
 ] as const
 
 export type ModelId = typeof MODELS[number]['id']
