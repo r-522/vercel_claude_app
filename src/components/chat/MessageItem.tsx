@@ -1,3 +1,6 @@
+'use client'
+
+import { useState } from 'react'
 import type { UIMessage, TextUIPart } from 'ai'
 import { MarkdownRenderer } from './MarkdownRenderer'
 import { LoadingDots } from '@/components/ui/LoadingDots'
@@ -20,27 +23,56 @@ function isStreamingPart(message: UIMessage): boolean {
   )
 }
 
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // Clipboard API unavailable
+    }
+  }
+
+  return (
+    <button
+      onClick={handleCopy}
+      className="text-[10px] text-[var(--text-muted)] hover:text-[var(--foreground)] transition-colors select-none px-1.5 py-0.5 rounded hover:bg-[var(--surface-hover)]"
+      aria-label="Copy text"
+    >
+      {copied ? '✓ Copied' : 'Copy'}
+    </button>
+  )
+}
+
 export function MessageItem({ message, isStreaming }: MessageItemProps) {
   const text = getTextContent(message)
   const activelyStreaming = isStreaming && isStreamingPart(message)
 
   if (message.role === 'user') {
     return (
-      <div className="py-4 border-b border-[var(--border)]">
+      <div className="py-4 border-b border-[var(--border)] group">
         <div className="flex items-start gap-4">
           <span className="flex-shrink-0 mt-0.5 text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-widest w-14 text-right pt-0.5 select-none">
             Query
           </span>
-          <p className="flex-1 text-sm font-medium text-[var(--foreground)] leading-relaxed whitespace-pre-wrap">
-            {text}
-          </p>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-[var(--foreground)] leading-relaxed whitespace-pre-wrap">
+              {text}
+            </p>
+            <div className="mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+              <CopyButton text={text} />
+            </div>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="py-4 border-b border-[var(--border)]">
+    <div className="py-4 border-b border-[var(--border)] group">
       <div className="flex items-start gap-4">
         <span className="flex-shrink-0 mt-0.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest w-14 text-right pt-0.5 select-none">
           Result
@@ -56,6 +88,11 @@ export function MessageItem({ message, isStreaming }: MessageItemProps) {
                   className="inline-block w-0.5 h-4 bg-slate-400 dark:bg-slate-500 animate-pulse ml-0.5 align-middle"
                   aria-hidden="true"
                 />
+              )}
+              {!activelyStreaming && text && (
+                <div className="mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <CopyButton text={text} />
+                </div>
               )}
             </>
           )}
