@@ -1,9 +1,8 @@
 // Model ID used for API calls (server-side only)
-// "Opus 4.6" does not exist; using the latest available Opus model
-export const MODEL_ID = 'claude-opus-4-8' as const
+export const MODEL_ID = 'claude-sonnet-4-6' as const
 
 // Display name shown in the UI — not the real model ID
-export const DISPLAY_NAME = 'Opus 4.6' as const
+export const DISPLAY_NAME = 'Sonnet 4.6' as const
 
 export const AUTH_COOKIE_NAME = 'auth_session' as const
 
