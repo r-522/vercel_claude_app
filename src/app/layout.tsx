@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Opus 4.6',
+  title: 'Sonnet 4.6',
   description: 'Knowledge base and research platform',
   robots: {
     index: false,
