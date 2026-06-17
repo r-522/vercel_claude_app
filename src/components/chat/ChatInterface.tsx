@@ -18,7 +18,6 @@ export function ChatInterface() {
   const [effort, setEffort] = useState<EffortId>(DEFAULT_EFFORT_ID)
   const [thinking, setThinking] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const settingsAnchorRef = useRef<HTMLDivElement>(null)
   const [isDark, setIsDark] = useState(
     () =>
       typeof document !== 'undefined' &&
@@ -33,14 +32,28 @@ export function ChatInterface() {
     if (!supportsThinking) setThinking(false)
   }, [supportsThinking])
 
-  // Recreate transport when model, effort, or thinking changes
+  // Refs hold current values so the transport closure always reads fresh state
+  // without needing to recreate the transport (useChat ignores transport changes)
+  const modelRef = useRef(selectedModel)
+  const effortRef = useRef(effort)
+  const thinkingRef = useRef(thinking)
+  modelRef.current = selectedModel
+  effortRef.current = effort
+  thinkingRef.current = thinking
+
+  // Transport created once — body is a function evaluated fresh on every send
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
         api: '/api/chat',
-        body: { modelId: selectedModel, effort, thinking },
+        body: () => ({
+          modelId: modelRef.current,
+          effort: effortRef.current,
+          thinking: thinkingRef.current,
+        }),
       }),
-    [selectedModel, effort, thinking],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
   )
 
   const { messages, sendMessage, status, error, regenerate } = useChat({
@@ -135,7 +148,7 @@ export function ChatInterface() {
           </span>
 
           {/* Settings (effort + thinking) */}
-          <div className="relative" ref={settingsAnchorRef}>
+          <div className="relative">
             <button
               onClick={() => setSettingsOpen((o) => !o)}
               className={[
