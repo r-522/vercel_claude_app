@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { UIMessage, TextUIPart, FileUIPart } from 'ai'
+import type { UIMessage, TextUIPart, FileUIPart, ReasoningUIPart } from 'ai'
 import { MarkdownRenderer } from './MarkdownRenderer'
 import { LoadingDots } from '@/components/ui/LoadingDots'
 
@@ -19,6 +19,10 @@ function getTextContent(message: UIMessage): string {
 
 function getFileParts(message: UIMessage): FileUIPart[] {
   return message.parts.filter((p): p is FileUIPart => p.type === 'file')
+}
+
+function getReasoningParts(message: UIMessage): ReasoningUIPart[] {
+  return message.parts.filter((p): p is ReasoningUIPart => p.type === 'reasoning')
 }
 
 function isStreamingPart(message: UIMessage): boolean {
@@ -55,9 +59,54 @@ function CopyButton({ text }: { text: string }) {
   )
 }
 
+function ChevronIcon({ expanded }: { expanded: boolean }) {
+  return (
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 10 10"
+      fill="currentColor"
+      aria-hidden="true"
+      style={{ transform: expanded ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }}
+    >
+      <path d="M3 2l4 3-4 3V2Z" />
+    </svg>
+  )
+}
+
+function ThinkingBlock({ text, isStreaming }: { text: string; isStreaming: boolean }) {
+  const [expanded, setExpanded] = useState(false)
+  const showContent = isStreaming || expanded
+
+  return (
+    <div className="mb-3">
+      <button
+        type="button"
+        onClick={() => setExpanded((e) => !e)}
+        className="flex items-center gap-1 text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-widest hover:text-[var(--foreground)] transition-colors select-none"
+      >
+        <ChevronIcon expanded={showContent} />
+        思考プロセス
+        {isStreaming && (
+          <span className="ml-1 w-1 h-1 rounded-full bg-current animate-pulse" aria-hidden="true" />
+        )}
+      </button>
+      {showContent && (
+        <div className="mt-1.5 pl-3 border-l-2 border-[var(--border)]">
+          <p className="text-xs text-[var(--text-muted)] whitespace-pre-wrap leading-relaxed">
+            {text || '…'}
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function MessageItem({ message, isStreaming }: MessageItemProps) {
   const text = getTextContent(message)
   const fileParts = getFileParts(message)
+  const reasoningParts = getReasoningParts(message)
+  const reasoningText = reasoningParts.map((p) => p.text).join('')
   const activelyStreaming = isStreaming && isStreamingPart(message)
 
   if (message.role === 'user') {
@@ -105,10 +154,13 @@ export function MessageItem({ message, isStreaming }: MessageItemProps) {
           Result
         </span>
         <div className="flex-1 min-w-0 text-[var(--foreground)]">
-          {isStreaming && !text ? (
+          {isStreaming && !text && !reasoningText ? (
             <LoadingDots />
           ) : (
             <>
+              {reasoningText && (
+                <ThinkingBlock text={reasoningText} isStreaming={activelyStreaming} />
+              )}
               <MarkdownRenderer content={text} />
               {activelyStreaming && (
                 <span
