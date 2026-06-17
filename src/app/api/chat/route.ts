@@ -6,9 +6,13 @@ import { verifyAuthCookie } from '@/lib/auth/cookies'
 import {
   ALLOWED_MODEL_IDS,
   DEFAULT_MODEL_ID,
+  DEFAULT_EFFORT_ID,
+  EFFORT_LEVELS,
+  MODELS,
   SYSTEM_PROMPT,
   AUTH_COOKIE_NAME,
 } from '@/lib/constants'
+import type { EffortId } from '@/lib/constants'
 import type { UIMessage } from 'ai'
 
 // Node.js runtime — required for in-memory rate limiter and jose Node.js APIs
@@ -23,14 +27,14 @@ export async function POST(request: NextRequest) {
     return new Response('Unauthorized', { status: 401 })
   }
 
-  let body: { id?: string; messages?: UIMessage[]; modelId?: string }
+  let body: { id?: string; messages?: UIMessage[]; modelId?: string; effort?: EffortId; thinking?: boolean }
   try {
     body = await request.json()
   } catch {
     return new Response('Bad Request', { status: 400 })
   }
 
-  const { messages, modelId } = body
+  const { messages, modelId, effort, thinking } = body
 
   if (!Array.isArray(messages) || messages.length === 0) {
     return new Response('Bad Request', { status: 400 })
@@ -41,11 +45,24 @@ export async function POST(request: NextRequest) {
     ? (modelId as string)
     : DEFAULT_MODEL_ID
 
+  const effortLevel =
+    EFFORT_LEVELS.find((e) => e.id === effort) ??
+    EFFORT_LEVELS.find((e) => e.id === DEFAULT_EFFORT_ID)!
+
+  const modelMeta = MODELS.find((m) => m.id === resolvedModel)
+  const applyThinking = thinking === true && modelMeta?.supportsThinking === true
+
   const result = streamText({
     model: anthropic(resolvedModel),
     system: SYSTEM_PROMPT,
     messages: await convertToModelMessages(messages),
-    temperature: 0.7,
+    ...(applyThinking
+      ? {
+          providerOptions: {
+            anthropic: { thinking: { type: 'enabled', budgetTokens: effortLevel.budgetTokens } },
+          },
+        }
+      : { temperature: effortLevel.temperature }),
   })
 
   return result.toUIMessageStreamResponse()
