@@ -1,7 +1,6 @@
 'use client'
 
 import {
-  useState,
   useRef,
   useEffect,
   type KeyboardEvent,
@@ -10,11 +9,7 @@ import {
 } from 'react'
 import { convertFileListToFileUIParts } from 'ai'
 import type { FileUIPart } from 'ai'
-
-interface AttachedFile {
-  file: File
-  previewUrl: string
-}
+import { useImageAttachments } from '@/hooks/useImageAttachments'
 
 interface InputAreaProps {
   value: string
@@ -28,13 +23,7 @@ const ACCEPT_TYPES = 'image/png,image/jpeg,image/gif,image/webp'
 export function InputArea({ value, disabled, onChange, onSubmit }: InputAreaProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [attached, setAttached] = useState<AttachedFile[]>([])
-
-  // Keep a stable ref to current attached list for cleanup on unmount
-  const attachedRef = useRef<AttachedFile[]>([])
-  useEffect(() => {
-    attachedRef.current = attached
-  }, [attached])
+  const { attached, add, remove, clear } = useImageAttachments()
 
   // Auto-resize textarea
   useEffect(() => {
@@ -44,42 +33,8 @@ export function InputArea({ value, disabled, onChange, onSubmit }: InputAreaProp
     el.style.height = `${Math.min(el.scrollHeight, 200)}px`
   }, [value])
 
-  // Revoke all blob URLs on unmount to free memory
-  useEffect(() => {
-    return () => {
-      for (const item of attachedRef.current) {
-        URL.revokeObjectURL(item.previewUrl)
-      }
-    }
-  }, [])
-
-  const addFiles = (incoming: FileList | File[]) => {
-    const images = Array.from(incoming).filter((f) => f.type.startsWith('image/'))
-    if (images.length === 0) return
-    // Create preview URLs immediately, not in an effect
-    const newItems = images.map((file) => ({
-      file,
-      previewUrl: URL.createObjectURL(file),
-    }))
-    setAttached((prev) => [...prev, ...newItems])
-  }
-
-  const removeFile = (index: number) => {
-    setAttached((prev) => {
-      URL.revokeObjectURL(prev[index].previewUrl)
-      return prev.filter((_, i) => i !== index)
-    })
-  }
-
-  const clearAttached = () => {
-    for (const item of attachedRef.current) {
-      URL.revokeObjectURL(item.previewUrl)
-    }
-    setAttached([])
-  }
-
   const handleFileInput = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) addFiles(e.target.files)
+    if (e.target.files) add(e.target.files)
     e.target.value = ''
   }
 
@@ -91,16 +46,7 @@ export function InputArea({ value, disabled, onChange, onSubmit }: InputAreaProp
         if (file) images.push(file)
       }
     }
-    if (images.length > 0) addFiles(images)
-  }
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      if ((value.trim() || attached.length > 0) && !disabled) {
-        void handleSubmit()
-      }
-    }
+    if (images.length > 0) add(images)
   }
 
   const handleSubmit = async () => {
@@ -114,7 +60,16 @@ export function InputArea({ value, disabled, onChange, onSubmit }: InputAreaProp
     }
 
     onSubmit(fileUIParts)
-    clearAttached()
+    clear()
+  }
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      if ((value.trim() || attached.length > 0) && !disabled) {
+        void handleSubmit()
+      }
+    }
   }
 
   const canSubmit = !disabled && (value.trim().length > 0 || attached.length > 0)
@@ -122,7 +77,6 @@ export function InputArea({ value, disabled, onChange, onSubmit }: InputAreaProp
   return (
     <div className="border-t border-[var(--border)] bg-[var(--surface)] px-4 py-3 sm:px-6 sm:py-4">
       <div className="max-w-3xl mx-auto">
-        {/* Image previews */}
         {attached.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-2">
             {attached.map(({ previewUrl, file }, i) => (
@@ -135,7 +89,7 @@ export function InputArea({ value, disabled, onChange, onSubmit }: InputAreaProp
                 />
                 <button
                   type="button"
-                  onClick={() => removeFile(i)}
+                  onClick={() => remove(i)}
                   className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-slate-700 dark:bg-slate-300 text-white dark:text-slate-900 text-[10px] leading-none flex items-center justify-center opacity-0 group-hover/preview:opacity-100 transition-opacity"
                   aria-label={`Remove ${file.name}`}
                 >
@@ -155,7 +109,6 @@ export function InputArea({ value, disabled, onChange, onSubmit }: InputAreaProp
               : 'border-[var(--border)] focus-within:border-slate-400 dark:focus-within:border-slate-500',
           ].join(' ')}
         >
-          {/* Attach image button */}
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}

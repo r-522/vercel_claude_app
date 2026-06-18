@@ -27,11 +27,6 @@ export const EFFORT_LEVELS = [
 export type EffortId = typeof EFFORT_LEVELS[number]['id']
 export const DEFAULT_EFFORT_ID: EffortId = 'high'
 
-export function getAppName(modelId: ModelId): string {
-  const model = MODELS.find((m) => m.id === modelId)
-  return `claude-${model?.family ?? 'haiku'}-app`
-}
-
 // Model IDs that are allowed in the chat API (server-side validation)
 export const ALLOWED_MODEL_IDS = MODELS.map((m) => m.id) as string[]
 

@@ -1,11 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import {
-  vscDarkPlus,
-  vs,
-} from 'react-syntax-highlighter/dist/esm/styles/prism'
+import { vscDarkPlus, vs } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import { useDarkMode } from '@/hooks/useDarkMode'
 
 interface CodeBlockProps {
   language: string
@@ -14,22 +12,7 @@ interface CodeBlockProps {
 
 export function CodeBlock({ language, children }: CodeBlockProps) {
   const [copied, setCopied] = useState(false)
-
-  // Initialize from DOM to avoid SSR mismatch, then track via MutationObserver
-  const [isDark, setIsDark] = useState(() => {
-    if (typeof document === 'undefined') return false
-    return document.documentElement.classList.contains('dark')
-  })
-
-  // Only subscribe to dark mode changes — no synchronous setState in effect body
-  useEffect(() => {
-    const el = document.documentElement
-    const observer = new MutationObserver(() => {
-      setIsDark(el.classList.contains('dark'))
-    })
-    observer.observe(el, { attributes: true, attributeFilter: ['class'] })
-    return () => observer.disconnect()
-  }, [])
+  const { isDark } = useDarkMode()
 
   const handleCopy = async () => {
     try {
@@ -45,7 +28,6 @@ export function CodeBlock({ language, children }: CodeBlockProps) {
 
   return (
     <div className="rounded-md overflow-hidden border border-[var(--border)] my-3 text-sm">
-      {/* Header bar */}
       <div className="flex items-center justify-between px-4 py-1.5 bg-slate-900 border-b border-slate-700">
         <span className="text-xs font-mono text-slate-400 uppercase tracking-wide select-none">
           {language || 'text'}
@@ -59,7 +41,6 @@ export function CodeBlock({ language, children }: CodeBlockProps) {
         </button>
       </div>
 
-      {/* Code content */}
       <SyntaxHighlighter
         language={language || 'text'}
         style={isDark ? vscDarkPlus : vs}

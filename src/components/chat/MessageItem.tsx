@@ -21,18 +21,17 @@ function getFileParts(message: UIMessage): FileUIPart[] {
   return message.parts.filter((p): p is FileUIPart => p.type === 'file')
 }
 
-function getReasoningParts(message: UIMessage): ReasoningUIPart[] {
-  return message.parts.filter((p): p is ReasoningUIPart => p.type === 'reasoning')
+function getReasoningText(message: UIMessage): string {
+  return message.parts
+    .filter((p): p is ReasoningUIPart => p.type === 'reasoning')
+    .map((p) => p.text)
+    .join('')
 }
 
 function isStreamingPart(message: UIMessage): boolean {
   return message.parts.some(
     (p): p is TextUIPart => p.type === 'text' && p.state === 'streaming',
   )
-}
-
-function imageUrl(part: FileUIPart): string {
-  return part.url
 }
 
 function CopyButton({ text }: { text: string }) {
@@ -105,8 +104,7 @@ function ThinkingBlock({ text, isStreaming }: { text: string; isStreaming: boole
 export function MessageItem({ message, isStreaming }: MessageItemProps) {
   const text = getTextContent(message)
   const fileParts = getFileParts(message)
-  const reasoningParts = getReasoningParts(message)
-  const reasoningText = reasoningParts.map((p) => p.text).join('')
+  const reasoningText = getReasoningText(message)
   const activelyStreaming = isStreaming && isStreamingPart(message)
 
   if (message.role === 'user') {
@@ -117,14 +115,13 @@ export function MessageItem({ message, isStreaming }: MessageItemProps) {
             Query
           </span>
           <div className="flex-1 min-w-0">
-            {/* Attached images */}
             {fileParts.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-2">
                 {fileParts.map((part, i) => (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     key={i}
-                    src={imageUrl(part)}
+                    src={part.url}
                     alt={part.filename ?? `Image ${i + 1}`}
                     className="max-h-48 max-w-xs rounded-md border border-[var(--border)] object-contain"
                   />

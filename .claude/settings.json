@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($nodePath = \"C:\\Users\\ikere\\AppData\\Roaming\\fnm\\node-versions\\v22.13.1\\installation\"; $env:Path = \"$nodePath;$env:Path\"; Set-Location \"C:\\Users\\ikere\\OneDrive\\デスクトップ\\プログラミング\\vercel app\"; & \"$nodePath\\npm.cmd\" run *)",
+      "PowerShell($nodePath = \"C:\\Users\\ikere\\AppData\\Roaming\\fnm\\node-versions\\v22.13.1\\installation\"; $env:Path = \"$nodePath;$env:Path\"; Set-Location \"C:\\Users\\ikere\\OneDrive\\デスクトップ\\プログラミング\\vercel app\"; & \"$nodePath\\node.exe\" *)"
+    ],
+    "deny": []
+  }
+}

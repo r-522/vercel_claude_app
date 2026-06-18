@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation'
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
 import type { FileUIPart } from 'ai'
-import { MODELS, DEFAULT_MODEL_ID, DEFAULT_EFFORT_ID, getAppName } from '@/lib/constants'
+import { MODELS, DEFAULT_MODEL_ID, DEFAULT_EFFORT_ID } from '@/lib/constants'
 import type { ModelId, EffortId } from '@/lib/constants'
+import { useDarkMode } from '@/hooks/useDarkMode'
 import { MessageList } from './MessageList'
 import { InputArea } from './InputArea'
 import { ModelSettings } from './ModelSettings'
@@ -18,14 +19,9 @@ export function ChatInterface() {
   const [effort, setEffort] = useState<EffortId>(DEFAULT_EFFORT_ID)
   const [thinking, setThinking] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const [isDark, setIsDark] = useState(
-    () =>
-      typeof document !== 'undefined' &&
-      document.documentElement.classList.contains('dark'),
-  )
+  const { isDark, toggle: toggleTheme } = useDarkMode()
 
-  const currentModelMeta = MODELS.find((m) => m.id === selectedModel)
-  const supportsThinking = currentModelMeta?.supportsThinking ?? false
+  const supportsThinking = MODELS.find((m) => m.id === selectedModel)?.supportsThinking ?? false
 
   // Reset thinking when switching to a model that doesn't support it
   useEffect(() => {
@@ -85,41 +81,20 @@ export function ChatInterface() {
     [input, isLoading, sendMessage],
   )
 
-  const handleModelChange = (id: ModelId) => setSelectedModel(id)
-
-  const toggleTheme = () => {
-    const next = !isDark
-    setIsDark(next)
-    document.documentElement.classList.toggle('dark', next)
-    try {
-      localStorage.setItem('theme', next ? 'dark' : 'light')
-    } catch {
-      // localStorage unavailable
-    }
-  }
-
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' })
     router.replace('/auth')
   }
 
-  const handleNewChat = () => {
-    window.location.reload()
-  }
-
-  const selectedModelDisplay =
-    MODELS.find((m) => m.id === selectedModel)?.display ?? selectedModel
-
-  const appName = getAppName(selectedModel)
+  const selectedModel_ = MODELS.find((m) => m.id === selectedModel)
 
   return (
     <div className="flex flex-col h-full bg-[var(--background)]">
-      {/* Top navigation bar */}
       <header className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-[var(--border)] bg-[var(--surface)] flex-shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-6 h-6 bg-slate-800 dark:bg-slate-200 rounded-[3px] flex-shrink-0" />
           <span className="text-sm font-semibold tracking-tight text-[var(--foreground)]">
-            {appName}
+            {`claude-${selectedModel_?.family ?? 'haiku'}-app`}
           </span>
           <span className="hidden sm:inline-block text-[10px] font-medium text-[var(--text-muted)] border border-[var(--border)] rounded px-1.5 py-0.5 uppercase tracking-widest">
             Knowledge Base
@@ -127,10 +102,9 @@ export function ChatInterface() {
         </div>
 
         <nav className="flex items-center gap-1.5">
-          {/* Model selector */}
           <select
             value={selectedModel}
-            onChange={(e) => handleModelChange(e.target.value as ModelId)}
+            onChange={(e) => setSelectedModel(e.target.value as ModelId)}
             disabled={isLoading}
             aria-label="Select model"
             className="text-xs text-[var(--text-muted)] bg-[var(--surface)] border border-[var(--border)] rounded px-2 py-1 outline-none hover:border-slate-400 dark:hover:border-slate-500 transition-colors disabled:opacity-50 cursor-pointer"
@@ -142,12 +116,10 @@ export function ChatInterface() {
             ))}
           </select>
 
-          {/* Active model badge (mobile) */}
           <span className="sm:hidden text-[10px] text-[var(--text-muted)] border border-[var(--border)] rounded px-1.5 py-0.5">
-            {selectedModelDisplay}
+            {selectedModel_?.display ?? selectedModel}
           </span>
 
-          {/* Settings (effort + thinking) */}
           <div className="relative">
             <button
               onClick={() => setSettingsOpen((o) => !o)}
@@ -176,7 +148,6 @@ export function ChatInterface() {
 
           <div className="w-px h-4 bg-[var(--border)] mx-0.5" />
 
-          {/* Dark mode toggle */}
           <button
             onClick={toggleTheme}
             className="p-1.5 rounded text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors"
@@ -185,10 +156,9 @@ export function ChatInterface() {
             {isDark ? <SunIcon /> : <MoonIcon />}
           </button>
 
-          {/* New session */}
           {messages.length > 0 && (
             <button
-              onClick={handleNewChat}
+              onClick={() => window.location.reload()}
               className="hidden sm:block text-xs text-[var(--text-muted)] hover:text-[var(--foreground)] px-2 py-1 rounded hover:bg-[var(--surface-hover)] transition-colors"
             >
               New
@@ -197,7 +167,6 @@ export function ChatInterface() {
 
           <div className="w-px h-4 bg-[var(--border)] mx-0.5" />
 
-          {/* Sign out */}
           <button
             onClick={handleLogout}
             className="text-xs text-[var(--text-muted)] hover:text-[var(--foreground)] px-2 py-1 rounded hover:bg-[var(--surface-hover)] transition-colors"
@@ -207,7 +176,6 @@ export function ChatInterface() {
         </nav>
       </header>
 
-      {/* Error banner with retry */}
       {error && (
         <div className="flex items-center justify-between px-4 sm:px-6 py-2 bg-red-50 dark:bg-red-950 border-b border-red-200 dark:border-red-900 flex-shrink-0">
           <p className="text-xs text-red-700 dark:text-red-400">
@@ -222,10 +190,8 @@ export function ChatInterface() {
         </div>
       )}
 
-      {/* Message list */}
       <MessageList messages={messages} isStreaming={isLoading} />
 
-      {/* Input area */}
       <InputArea
         value={input}
         disabled={isLoading}
