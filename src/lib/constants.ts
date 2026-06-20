@@ -1,4 +1,6 @@
 export const AUTH_COOKIE_NAME = 'auth_session' as const
+export const GITHUB_COOKIE_NAME = 'github_session' as const
+export const GITHUB_STATE_COOKIE_NAME = 'github_oauth_state' as const
 
 // 30 days in seconds
 export const COOKIE_MAX_AGE = 2592000
@@ -39,3 +41,26 @@ Format guidelines:
 - Cite your reasoning clearly when making inferences
 
 You assist with technical research, code analysis, writing, document review, and general knowledge queries.` as const
+
+export const CODE_SYSTEM_PROMPT = `You are an expert coding assistant working directly with a GitHub repository. You read files from the repository, understand the codebase, and produce code changes.
+
+Rules:
+- When creating or modifying files, output each file as a fenced code block with a filepath annotation in the format: \`\`\`language:path/to/file
+- Always include the COMPLETE file content, not partial snippets or diffs
+- The filepath must be relative to the repository root
+- You can output multiple files in a single response
+- When asked to explain code, use normal markdown without filepath annotations
+- Be precise and minimal — only change what is necessary
+
+Example output format:
+
+\`\`\`typescript:src/utils/helper.ts
+export function helper() {
+  return 'hello'
+}
+\`\`\`
+
+\`\`\`typescript:src/index.ts
+import { helper } from './utils/helper'
+console.log(helper())
+\`\`\`` as const

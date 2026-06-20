@@ -130,14 +130,35 @@ src/
                               #   streamText + convertToModelMessages
                               #   validates modelId against ALLOWED_MODEL_IDS
                               #   applies budgetTokens (thinking) or temperature
+      code/
+        route.ts              # POST — code chat endpoint with GitHub context
+                              #   accepts repo/branch/files context
+                              #   extracts file changes from response
       auth/
         verify/
           route.ts            # POST — login: rate-limit → code compare → set JWT cookie
         logout/
           route.ts            # POST — logout: clear JWT cookie
+      github/
+        auth/
+          route.ts            # GET — GitHub OAuth authorization redirect
+        callback/
+          route.ts            # GET — GitHub OAuth callback, exchanges code → token
+        status/
+          route.ts            # GET — check GitHub connection status
+        disconnect/
+          route.ts            # POST — disconnect GitHub account (clear cookie)
+        repos/
+          route.ts            # GET — list user's GitHub repositories
+        branches/
+          route.ts            # GET — list branches in a repository
+        contents/
+          route.ts            # GET — list/fetch file contents in a repo
+        push/
+          route.ts            # POST — create branch and push changes to GitHub
     auth/
       page.tsx                # 4-digit access code login page (client)
-    page.tsx                  # Protected home page — renders <ChatInterface />
+    page.tsx                  # Protected home page — renders <ChatInterface /> or <CodeInterface />
     layout.tsx                # Root layout: dark mode init script, lang="ja"
     globals.css               # Tailwind base + CSS custom properties:
                               #   --background, --foreground, --border,
@@ -157,6 +178,19 @@ src/
                               #   both constants defined at MODULE level (never inline)
       CodeBlock.tsx           # Prism syntax highlight, dark/light theme swap, copy
       ModelSettings.tsx       # Effort level radio group + thinking toggle dropdown
+    code/
+      CodeInterface.tsx       # GitHub integration container
+                              #   handles repo/branch selection, file browsing, chat
+      CodeChat.tsx            # Chat component with repo context
+                              #   extracts file changes from Claude responses
+      GitHubConnect.tsx       # GitHub OAuth connection button + user status
+      RepoSelector.tsx        # Dropdown to select repository
+      BranchSelector.tsx      # Dropdown to select branch
+      FileExplorer.tsx        # Tree view of files, toggle to add context
+      ChangeReview.tsx        # Show staged file changes
+      PushDialog.tsx          # Dialog to review and push changes to GitHub
+    layout/
+      TabNavigation.tsx       # Navigation between Chat and Code modes
     ui/
       LoadingDots.tsx         # 3-dot bounce animation (shared primitive)
 
@@ -167,11 +201,14 @@ src/
     useImageAttachments.ts    # Blob URL lifecycle management
                               #   returns { attached, add, remove, clear }
                               #   auto-revokes URLs on unmount
+    useGitHub.ts              # GitHub API client wrapper
+                              #   manages connection state, provides methods for GitHub API calls
+                              #   exports types: GitHubUser, GitHubRepoInfo, FileChange, etc.
 
   lib/
-    constants.ts              # MODELS, EFFORT_LEVELS, SYSTEM_PROMPT
-                              #   AUTH_COOKIE_NAME, COOKIE_MAX_AGE
-                              #   RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS
+    constants.ts              # MODELS, EFFORT_LEVELS, SYSTEM_PROMPT, CODE_SYSTEM_PROMPT
+                              #   AUTH_COOKIE_NAME, GITHUB_COOKIE_NAME, GITHUB_STATE_COOKIE_NAME
+                              #   COOKIE_MAX_AGE, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS
                               #   ALLOWED_MODEL_IDS (derived from MODELS)
                               #   NOTE: ACCESS_CODE is NOT here — env only
     auth/
@@ -182,9 +219,15 @@ src/
       rate-limiter.ts         # in-memory Map<ip, attempts>
                               # checkRateLimit(ip) → { allowed, remaining }
                               # WARNING: not persistent across Vercel instances
+    github/
+      types.ts                # Type definitions: GitHubUser, GitHubRepoInfo, FileChange, etc.
+      constants.ts            # GitHub API URLs and configuration
+      client.ts               # Low-level GitHub API client functions
+                              # getUser, listRepos, listBranches, getContents, createBranchAndPush
+      token.ts                # GitHub token encryption/decryption (jose)
 
   proxy.ts                    # Next.js Middleware
-                              #   verifies JWT on ALL routes except /auth/*
+                              #   verifies JWT on ALL routes except /auth/* and /api/github/callback
                               #   redirects unauthenticated → /auth
 ```
 
@@ -731,6 +774,8 @@ Copy `.env.local.example` to `.env.local` and fill in all values before running.
 | `ANTHROPIC_API_KEY` | Yes | Anthropic API key — obtain from console.anthropic.com |
 | `ACCESS_CODE` | Yes | 4-digit numeric code for login — keep secret, never in client code |
 | `COOKIE_SECRET` | Yes | 32+ character random string for JWT HMAC-SHA256 signing |
+| `GITHUB_CLIENT_ID` | No | GitHub OAuth App client ID — required for Code mode (GitHub integration) |
+| `GITHUB_CLIENT_SECRET` | No | GitHub OAuth App client secret — required for Code mode |
 
 ### Security Notes on Each Variable
 
@@ -749,6 +794,14 @@ Copy `.env.local.example` to `.env.local` and fill in all values before running.
 - Used by `src/lib/auth/cookies.ts` for `jose` JWT signing
 - Must be 32+ characters (shorter keys reduce HMAC-SHA256 security)
 - Rotate by changing value + clearing user cookies (next login required)
+
+**`GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`**
+- Optional — required only if Code mode is enabled
+- Create a GitHub OAuth App at https://github.com/settings/developers
+- Authorization callback URL: `https://<your-domain>/api/github/callback`
+- Never prefix with `NEXT_PUBLIC_` — `CLIENT_SECRET` is server-side only
+- `CLIENT_SECRET` read in `src/app/api/github/callback/route.ts` only
+- GitHub token is encrypted with `COOKIE_SECRET` and stored as HTTP-Only session cookie
 
 ### Generating a Secure COOKIE_SECRET
 
