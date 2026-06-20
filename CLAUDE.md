@@ -29,7 +29,12 @@ Next.js 16 + React 19 streaming chat application powered by the Anthropic API. P
 
 ## 1. Project Overview
 
-A single-user AI chat application built with Next.js App Router. Users authenticate with a 4-digit access code, then chat with Claude models via streaming responses. Supports image attachments, extended thinking (reasoning blocks), model selection, effort levels, dark mode, and Markdown rendering with syntax highlighting.
+A single-user AI chat application with GitHub integration, built with Next.js App Router. Users authenticate with a 4-digit access code, then access two modes:
+
+- **Chat Mode**: Stream responses from Claude models with image attachments, extended thinking (reasoning blocks), model selection, effort levels, dark mode, and Markdown rendering
+- **Code Mode**: Browse GitHub repositories, select files as context, chat with Claude about code, review changes, and push to GitHub
+
+Features include rate-limited authentication, JWT-based session management, and serverless deployment on Vercel.
 
 **Tech Stack**
 
@@ -41,11 +46,12 @@ A single-user AI chat application built with Next.js App Router. Users authentic
 | Styling | Tailwind CSS, PostCSS | 4.3.1 |
 | AI SDK | @ai-sdk/anthropic, ai, @ai-sdk/react | 3.0.84 / 6.0.206 / 3.0.208 |
 | Auth | jose (JWT HS256) | 6.2.3 |
+| GitHub | GitHub API v3, OAuth 2.0 | — |
 | Markdown | react-markdown, remark-gfm | 10.1.0 / 4.0.1 |
 | Syntax highlight | react-syntax-highlighter | 16.1.1 |
 | Linting | ESLint 9 + eslint-config-next | — |
 
-**Deployment:** Vercel (serverless Node.js runtime). No test suite. No CI/CD pipeline.
+**Deployment:** Vercel (serverless Node.js runtime). No test suite. No CI/CD pipeline. No persistent storage — session-only GitHub tokens.
 
 ---
 
