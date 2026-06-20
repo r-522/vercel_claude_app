@@ -1,219 +1,219 @@
-# Claude AI Chat App
+# Claude AI チャットアプリ
 
-A Next.js 16 + React 19 streaming chat application powered by the Anthropic API, with GitHub integration for code editing and management.
+Anthropic APIを使用したNext.js 16 + React 19ストリーミングチャットアプリケーション。GitHub統合でコード編集・管理も可能。
 
 ![Next.js](https://img.shields.io/badge/Next.js-16.2.9-black)
 ![React](https://img.shields.io/badge/React-19.2.7-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-6.0.3-blue)
-![License](https://img.shields.io/badge/License-MIT-green)
+![ライセンス](https://img.shields.io/badge/License-MIT-green)
 
-## Features
+## 🎯 主な機能
 
-### Chat Mode
-- **Multi-model support**: Opus 4.6, Sonnet 4.6, Haiku 4.5
-- **Extended thinking**: Enable reasoning blocks for complex problems
-- **Effort levels**: 5 configurable effort levels (Low → Max) with dynamic budget tokens
-- **Image attachments**: Paste or upload images for visual analysis
-- **Dark mode**: System-aware dark/light theme toggle
-- **Markdown rendering**: Full Markdown support with syntax highlighting
+### チャットモード
+- **マルチモデル対応**: Opus 4.6、Sonnet 4.6、Haiku 4.5
+- **拡張思考**: 複雑な問題に対するリーズニングブロック
+- **努力レベル**: 5段階調整可能（低 → 最大）でダイナミックなトークン割当
+- **画像添付**: 画像をペースト・アップロードして視覚分析
+- **ダークモード**: システム連動の明暗テーマ切り替え
+- **Markdown対応**: 完全なMarkdown + シンタックスハイライト
 
-### Code Mode (GitHub Integration)
-- **GitHub OAuth**: Secure authentication and authorization
-- **Repository browser**: Browse your repositories and select branches
-- **File explorer**: Navigate and select context files
-- **Code chat**: Interact with Claude using repo context
-- **Change tracking**: Review and stage file modifications
-- **Direct push**: Create branches and push changes back to GitHub
+### コードモード（GitHub統合）
+- **GitHub OAuth認証**: セキュアな認証と権限管理
+- **リポジトリブラウザ**: リポジトリとブランチを選択
+- **ファイルエクスプローラー**: ファイルを参照してコンテキスト追加
+- **コードチャット**: リポジトリコンテキストを使用してClaudeと対話
+- **変更追跡**: ファイル修正をレビュー・ステージング
+- **直接プッシュ**: ブランチを作成してGitHubに変更を反映
 
-### Core Architecture
-- **Authentication**: 4-digit access code + JWT cookies (HTTP-only, session-limited)
-- **Rate limiting**: IP-based rate limiting with timing-attack mitigation
-- **Streaming**: Real-time streaming responses from the Anthropic API
-- **Type safety**: Full TypeScript strict mode
-- **Deployment**: Vercel serverless (Node.js runtime)
+### コア機能
+- **認証**: 4桁アクセスコード + JWTクッキー（HTTP-only、セッション限定）
+- **レート制限**: IP単位のレート制限（タイミング攻撃対策）
+- **ストリーミング**: Anthropic APIからのリアルタイムストリーミング応答
+- **型安全性**: TypeScript strict mode完全対応
+- **デプロイ**: Vercelサーバーレス（Node.js runtime）
 
-## Quick Start
+## 🚀 クイックスタート
 
-### Prerequisites
-- Node.js 22.13.1+ (managed via fnm)
-- Anthropic API key
-- (Optional) GitHub OAuth credentials for Code mode
+### 前提条件
+- Node.js 22.13.1+ (fnmで管理)
+- Anthropic APIキー
+- （オプション）GitHub OAuthクレデンシャル（コードモード用）
 
-### Installation
+### インストール
 
 ```bash
-# Clone the repository
+# リポジトリをクローン
 git clone https://github.com/r-522/vercel_claude_app.git
 cd vercel_claude_app
 
-# Copy environment template
+# 環境テンプレートをコピー
 cp .env.local.example .env.local
 
-# Fill in your credentials
-# - ANTHROPIC_API_KEY: from console.anthropic.com
-# - ACCESS_CODE: 4-digit code for login
-# - COOKIE_SECRET: 32+ character random string
-# - GITHUB_CLIENT_ID/SECRET: (optional, for Code mode)
+# クレデンシャルを設定
+# - ANTHROPIC_API_KEY: console.anthropic.comから取得
+# - ACCESS_CODE: 4桁のログインコード
+# - COOKIE_SECRET: 32文字以上のランダム文字列
+# - GITHUB_CLIENT_ID/SECRET: (オプション、コードモード用)
 ```
 
-### Development
+### 開発
 
 ```bash
-# Install dependencies
+# 依存関係をインストール
 npm install
 
-# Start development server
+# 開発サーバーを起動
 npm run dev
 
-# Open browser
+# ブラウザで開く
 # http://localhost:3000
 ```
 
-### Type Checking & Linting
+### 型チェック・リント
 
 ```bash
-npm run type-check  # TypeScript validation
-npm run lint        # ESLint validation
-npm run build       # Production build
+npm run type-check  # TypeScript検証
+npm run lint        # ESLint検証
+npm run build       # 本番ビルド
 ```
 
-## Configuration
+## ⚙️ 設定
 
-### Models
+### 利用可能なモデル
 
-| Model | Display | Family | Thinking |
-|-------|---------|--------|----------|
-| `claude-opus-4-6` | Opus 4.6 | opus | ✅ Yes |
-| `claude-sonnet-4-6` | Sonnet 4.6 | sonnet | ✅ Yes |
-| `claude-haiku-4-5-20251001` | Haiku 4.5 | haiku | ❌ No |
+| モデル | 表示名 | ファミリー | 思考 |
+|--------|--------|-----------|------|
+| `claude-opus-4-6` | Opus 4.6 | opus | ✅ 対応 |
+| `claude-sonnet-4-6` | Sonnet 4.6 | sonnet | ✅ 対応 |
+| `claude-haiku-4-5-20251001` | Haiku 4.5 | haiku | ❌ 非対応 |
 
-### Effort Levels
+### 努力レベル
 
-| Level | Label | Budget Tokens | Temperature |
-|-------|-------|---------------|-------------|
+| レベル | 表示 | 思考トークン | 温度 |
+|--------|------|-------------|------|
 | `low` | 低 | 1,024 | 1.0 |
 | `medium` | 中 | 3,000 | 0.85 |
 | `high` | 高 | 6,000 | 0.7 |
 | `xhigh` | 超高 | 12,000 | 0.4 |
 | `max` | 最大 | 24,000 | 0.1 |
 
-## Architecture
+## 📁 アーキテクチャ
 
-### Directory Structure
+### ディレクトリ構成
 
 ```
 src/
   app/
     api/
-      chat/              # Chat streaming endpoint
-      code/              # Code chat with repo context
-      auth/              # Authentication (verify, logout)
-      github/            # GitHub OAuth & API routes
-    auth/                # Login page
-    page.tsx             # Protected chat/code interface
-    layout.tsx           # Root layout
+      chat/              # チャットストリーミングエンドポイント
+      code/              # コンテキスト付きコードチャット
+      auth/              # 認証（検証、ログアウト）
+      github/            # GitHub OAuth & APIルート
+    auth/                # ログインページ
+    page.tsx             # 保護されたチャット/コードインターフェース
+    layout.tsx           # ルートレイアウト
   components/
-    chat/                # Chat UI components
-    code/                # Code/GitHub UI components
-    layout/              # Navigation
+    chat/                # チャットUIコンポーネント
+    code/                # コード/GitHub UIコンポーネント
+    layout/              # ナビゲーション
   hooks/
-    useDarkMode.ts       # Dark mode state management
-    useImageAttachments.ts # Image upload lifecycle
-    useGitHub.ts         # GitHub API wrapper
+    useDarkMode.ts       # ダークモード状態管理
+    useImageAttachments.ts # 画像アップロードライフサイクル
+    useGitHub.ts         # GitHub APIラッパー
   lib/
-    constants.ts         # Models, effort levels, prompts
-    auth/                # JWT & rate limiting
-    github/              # GitHub client & types
+    constants.ts         # モデル、努力レベル、プロンプト
+    auth/                # JWT & レート制限
+    github/              # GitHubクライアント & 型定義
 ```
 
-### Key Technologies
+### 主要技術
 
-- **Framework**: Next.js 16 with App Router
-- **UI**: React 19 with Tailwind CSS
-- **API**: Anthropic SDK with streaming support
-- **Auth**: José (JWT HS256)
-- **GitHub**: Official GitHub API + OAuth 2.0
+- **フレームワーク**: Next.js 16 (App Router)
+- **UI**: React 19 + Tailwind CSS
+- **AI SDK**: Anthropic SDK (ストリーミング対応)
+- **認証**: José (JWT HS256)
+- **GitHub**: 公式GitHub API + OAuth 2.0
 - **Markdown**: react-markdown + remark-gfm + Prism
 
-## Environment Variables
+## 🔐 環境変数
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `ANTHROPIC_API_KEY` | ✅ | Anthropic API key from console.anthropic.com |
-| `ACCESS_CODE` | ✅ | 4-digit numeric code for login |
-| `COOKIE_SECRET` | ✅ | 32+ character random string for JWT signing |
-| `GITHUB_CLIENT_ID` | ❌ | GitHub OAuth App client ID (for Code mode) |
-| `GITHUB_CLIENT_SECRET` | ❌ | GitHub OAuth App client secret (for Code mode) |
+| 変数 | 必須 | 説明 |
+|------|------|------|
+| `ANTHROPIC_API_KEY` | ✅ | console.anthropic.comから取得するAPIキー |
+| `ACCESS_CODE` | ✅ | 4桁の数値ログインコード |
+| `COOKIE_SECRET` | ✅ | JWT署名用の32文字以上のランダム文字列 |
+| `GITHUB_CLIENT_ID` | ❌ | GitHub OAuthアプリクライアントID（コードモード用） |
+| `GITHUB_CLIENT_SECRET` | ❌ | GitHub OAuthアプリクライアントシークレット（コードモード用） |
 
-## Security
+## 🔒 セキュリティ
 
-- **Rate limiting**: IP-based limiting (10 attempts per 15 minutes)
-- **JWT authentication**: HTTP-only cookies with SameSite=Lax
-- **Session-only tokens**: GitHub tokens cleared on browser close
-- **Server-side validation**: Model IDs & effort levels validated server-side
-- **HTTPS enforcement**: Secure cookies in production
-- **No persistence**: No database, no localStorage — sessions are ephemeral
+- **レート制限**: IP単位のレート制限（15分間10試行まで）
+- **JWT認証**: HTTP-onlyクッキー + SameSite=Lax
+- **セッション限定**: ブラウザを閉じるとGitHubトークンは削除
+- **サーバーサイド検証**: モデルIDと努力レベルをサーバーで検証
+- **HTTPS強制**: 本番環境ではSecureフラグを設定
+- **永続化なし**: データベースなし、localStorage未使用 — セッションのみ
 
-## Deployment
+## 📦 デプロイ
 
-### Vercel (Recommended)
+### Vercel（推奨）
 
-1. Push to GitHub
-2. Connect repository to Vercel
-3. Set environment variables in Vercel dashboard
-4. Deploy automatically on push
+1. GitHubにプッシュ
+2. Vercelでリポジトリを接続
+3. Vercelダッシュボードで環境変数を設定
+4. プッシュ時に自動デプロイ
 
 ```bash
-# Manual deploy
+# 手動デプロイ
 vercel deploy --prod
 ```
 
-### Development Mode
+### ローカル開発
 
 ```bash
 npm run dev
-# Server runs on http://localhost:3000
+# サーバーが http://localhost:3000 で起動
 ```
 
-## Usage
+## 💬 使用方法
 
-### Chat Mode
-1. Login with 4-digit access code
-2. Select a model (Opus, Sonnet, or Haiku)
-3. Choose effort level (Low → Max)
-4. (Optional) Attach images
-5. Chat naturally with Claude
-6. Toggle extended thinking for complex problems
+### チャットモード
+1. 4桁のアクセスコードでログイン
+2. モデルを選択（Opus、Sonnet、Haiku）
+3. 努力レベルを選択（低 → 最大）
+4. （オプション）画像を添付
+5. Claudeと自然に会話
+6. 複雑な問題は拡張思考を有効化
 
-### Code Mode
-1. Connect GitHub account via OAuth
-2. Select a repository and branch
-3. Browse files and add context
-4. Chat with Claude about your code
-5. Review proposed changes
-6. Push changes to a new branch
+### コードモード
+1. GitHubアカウントでOAuth接続
+2. リポジトリとブランチを選択
+3. ファイルを参照してコンテキスト追加
+4. Claudeとコードについて対話
+5. 提案された変更をレビュー
+6. 新しいブランチにプッシュ
 
-## Development Workflow
+## 📚 開発ガイド
 
-See [CLAUDE.md](./CLAUDE.md) for detailed:
-- Architecture & patterns
-- Coding standards
-- Development workflow
-- Debugging guide
-- Security rules
-- Release checklist
+詳細は [CLAUDE.md](./CLAUDE.md) を参照：
+- アーキテクチャ & パターン
+- コーディング規約
+- 開発ワークフロー
+- デバッグガイド
+- セキュリティルール
+- リリースチェックリスト
 
-## License
+## 📄 ライセンス
 
 MIT
 
-## Support
+## 💬 サポート
 
-For issues, feature requests, or feedback:
+問題報告、機能リクエスト、フィードバック：
 - GitHub: https://github.com/r-522/vercel_claude_app
-- Anthropic API docs: https://docs.anthropic.com
-- Claude Code guide: https://claude.com/claude-code
+- Anthropic APIドキュメント: https://docs.anthropic.com
+- Claude Code ガイド: https://claude.com/claude-code
 
 ---
 
-Built with [Claude Code](https://claude.com/claude-code) 🚀
+[Claude Code](https://claude.com/claude-code) で構築 🚀
