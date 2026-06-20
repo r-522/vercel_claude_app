@@ -1,6 +1,6 @@
-# Claude AI Chat App — Project Reference
+# Claude AI チャットアプリ — プロジェクトリファレンス
 
-Next.js 16 + React 19 streaming chat application powered by the Anthropic API. Protected by JWT-based access code authentication. Japanese UI. Deployed on Vercel.
+Anthropic APIを使用したNext.js 16 + React 19ストリーミングチャットアプリケーション。4桁アクセスコード + JWT認証で保護。日本語UI。Vercelでデプロイ。
 
 ---
 
@@ -27,14 +27,14 @@ Next.js 16 + React 19 streaming chat application powered by the Anthropic API. P
 
 ---
 
-## 1. Project Overview
+## 1. プロジェクト概要
 
-A single-user AI chat application with GitHub integration, built with Next.js App Router. Users authenticate with a 4-digit access code, then access two modes:
+GitHub統合機能を備えたシングルユーザーAIチャットアプリケーション。Next.js App Routerで構築。ユーザーは4桁のアクセスコードで認証後、2つのモードにアクセス：
 
-- **Chat Mode**: Stream responses from Claude models with image attachments, extended thinking (reasoning blocks), model selection, effort levels, dark mode, and Markdown rendering
-- **Code Mode**: Browse GitHub repositories, select files as context, chat with Claude about code, review changes, and push to GitHub
+- **チャットモード**: Claude モデルからのストリーミング応答（画像添付、拡張思考、モデル選択、努力レベル調整、ダークモード、Markdown対応）
+- **コードモード**: GitHub リポジトリ参照、ファイルをコンテキストとして選択、コードについてClaudeと対話、変更をレビュー、GitHubにプッシュ
 
-Features include rate-limited authentication, JWT-based session management, and serverless deployment on Vercel.
+機能には、IP単位のレート制限、JWT ベースのセッション管理、Vercelでのサーバーレスデプロイが含まれます。
 
 **Tech Stack**
 
