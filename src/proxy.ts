@@ -5,7 +5,8 @@ import { jwtVerify } from 'jose'
 // Inlined to avoid importing Node.js-specific modules into Edge runtime
 const AUTH_COOKIE_NAME = 'auth_session'
 
-const PUBLIC_PATHS = ['/auth', '/api/auth/verify', '/api/auth/logout']
+// /api/cron/* is protected by CRON_SECRET header inside the handlers, not by JWT cookie
+const PUBLIC_PATHS = ['/auth', '/api/auth/verify', '/api/auth/logout', '/api/cron']
 
 function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some(

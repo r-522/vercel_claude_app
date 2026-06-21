@@ -1,13 +1,14 @@
 'use client'
 
 interface TabNavigationProps {
-  activeTab: 'chat' | 'code'
-  onTabChange: (tab: 'chat' | 'code') => void
+  activeTab: 'chat' | 'code' | 'tasks'
+  onTabChange: (tab: 'chat' | 'code' | 'tasks') => void
 }
 
 const TABS = [
   { id: 'chat' as const, label: 'Chat' },
   { id: 'code' as const, label: 'Code' },
+  { id: 'tasks' as const, label: 'Tasks' },
 ] as const
 
 export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {

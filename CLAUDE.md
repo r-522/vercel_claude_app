@@ -162,6 +162,20 @@ src/
           route.ts            # GET — list/fetch file contents in a repo
         push/
           route.ts            # POST — create branch and push changes to GitHub
+      tasks/
+        route.ts              # GET / POST — fetch or add scheduled tasks (GitHub storage)
+        [id]/
+          route.ts            # PUT / DELETE — update or remove a specific task
+        config/
+          route.ts            # GET / POST — tasks_config cookie (repo + branch selection)
+        run/
+          [id]/
+            route.ts          # POST — immediately execute a task via Claude API
+      cron/
+        run-tasks/
+          route.ts            # POST — Vercel Cron: run all enabled tasks (CRON_SECRET auth)
+        cleanup/
+          route.ts            # POST — Vercel Cron: purge expired rate-limit entries hourly
     auth/
       page.tsx                # 4-digit access code login page (client)
     page.tsx                  # Protected home page — renders <ChatInterface /> or <CodeInterface />
@@ -171,6 +185,13 @@ src/
                               #   --surface, --surface-hover, --text-muted
 
   components/
+    tasks/
+      TasksInterface.tsx      # Main container for task management
+                              #   checks GitHub connection + tasks_config cookie
+                              #   routes to TaskSetup or TaskList
+      TaskSetup.tsx           # Initial config: select repo/branch, saves tasks_config cookie
+      TaskList.tsx            # List of tasks with toggle, run-now, edit, delete
+      TaskForm.tsx            # Add/edit task form (dialog overlay)
     chat/
       ChatInterface.tsx       # Main container
                               #   model/effort selector, dark toggle
@@ -214,9 +235,12 @@ src/
   lib/
     constants.ts              # MODELS, EFFORT_LEVELS, SYSTEM_PROMPT, CODE_SYSTEM_PROMPT
                               #   AUTH_COOKIE_NAME, GITHUB_COOKIE_NAME, GITHUB_STATE_COOKIE_NAME
+                              #   TASKS_COOKIE_NAME, TASKS_FILE_PATH
                               #   COOKIE_MAX_AGE, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS
                               #   ALLOWED_MODEL_IDS (derived from MODELS)
                               #   NOTE: ACCESS_CODE is NOT here — env only
+    tasks/
+      types.ts                # ScheduledTask, TasksFile, TasksSettings
     auth/
       cookies.ts              # signAuthCookie(payload) → token
                               # verifyAuthCookie(token) → payload | null
@@ -782,6 +806,10 @@ Copy `.env.local.example` to `.env.local` and fill in all values before running.
 | `COOKIE_SECRET` | Yes | 32+ character random string for JWT HMAC-SHA256 signing |
 | `GITHUB_CLIENT_ID` | No | GitHub OAuth App client ID — required for Code mode (GitHub integration) |
 | `GITHUB_CLIENT_SECRET` | No | GitHub OAuth App client secret — required for Code mode |
+| `CRON_SECRET` | No | Random string to authenticate `/api/cron/*` endpoints — required for Tasks Cron |
+| `GITHUB_PAT` | No | GitHub Personal Access Token (repo scope) used by Vercel Cron — required for Tasks Cron |
+| `TASKS_REPO` | No | `owner/repo` where `.claude-tasks/tasks.json` is stored — required for Tasks Cron |
+| `TASKS_BRANCH` | No | Branch for tasks file (default: `main`) |
 
 ### Security Notes on Each Variable
 

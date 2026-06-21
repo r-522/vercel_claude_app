@@ -1,6 +1,10 @@
 export const AUTH_COOKIE_NAME = 'auth_session' as const
 export const GITHUB_COOKIE_NAME = 'github_session' as const
 export const GITHUB_STATE_COOKIE_NAME = 'github_oauth_state' as const
+export const TASKS_COOKIE_NAME = 'tasks_config' as const
+
+// Path within the user-selected GitHub repo where tasks are stored
+export const TASKS_FILE_PATH = '.claude-tasks/tasks.json' as const
 
 // 30 days in seconds
 export const COOKIE_MAX_AGE = 2592000

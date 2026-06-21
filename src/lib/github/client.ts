@@ -127,6 +127,49 @@ export async function getFileContent(token: string, repo: string, path: string, 
   return result.content
 }
 
+export async function getFileWithSha(
+  token: string,
+  repo: string,
+  filePath: string,
+  ref: string,
+): Promise<{ content: string; sha: string } | null> {
+  try {
+    const result = await githubFetch<GitHubFileResponse>(
+      token,
+      `/repos/${repo}/contents/${filePath}?ref=${encodeURIComponent(ref)}`,
+    )
+    const content =
+      result.encoding === 'base64'
+        ? Buffer.from(result.content.replace(/\n/g, ''), 'base64').toString('utf-8')
+        : result.content
+    return { content, sha: result.sha }
+  } catch (err) {
+    if (err instanceof GitHubApiError && err.status === 404) return null
+    throw err
+  }
+}
+
+export async function upsertFile(
+  token: string,
+  repo: string,
+  filePath: string,
+  content: string,
+  message: string,
+  branch: string,
+  sha?: string,
+): Promise<void> {
+  const body: Record<string, string> = {
+    message,
+    content: Buffer.from(content, 'utf-8').toString('base64'),
+    branch,
+  }
+  if (sha) body.sha = sha
+  await githubFetch<unknown>(token, `/repos/${repo}/contents/${filePath}`, {
+    method: 'PUT',
+    body: JSON.stringify(body),
+  })
+}
+
 export async function createBranchAndPush(token: string, params: PushParams): Promise<PushResult> {
   const { repo, baseBranch, newBranch, files, message } = params
 

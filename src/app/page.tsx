@@ -3,16 +3,19 @@
 import { useState } from 'react'
 import { ChatInterface } from '@/components/chat/ChatInterface'
 import { CodeInterface } from '@/components/code/CodeInterface'
+import { TasksInterface } from '@/components/tasks/TasksInterface'
 import { TabNavigation } from '@/components/layout/TabNavigation'
 
 export default function HomePage() {
-  const [activeTab, setActiveTab] = useState<'chat' | 'code'>('chat')
+  const [activeTab, setActiveTab] = useState<'chat' | 'code' | 'tasks'>('chat')
 
   return (
     <main className="h-full flex flex-col">
       <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
       <div className="flex-1 min-h-0">
-        {activeTab === 'chat' ? <ChatInterface /> : <CodeInterface />}
+        {activeTab === 'chat' && <ChatInterface />}
+        {activeTab === 'code' && <CodeInterface />}
+        {activeTab === 'tasks' && <TasksInterface />}
       </div>
     </main>
   )
