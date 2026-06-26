@@ -31,7 +31,7 @@ Anthropic APIを使用したNext.js 16 + React 19ストリーミングチャッ�
 
 GitHub統合機能を備えたシングルユーザーAIチャットアプリケーション。Next.js App Routerで構築。ユーザーは4桁のアクセスコードで認証後、2つのモードにアクセス：
 
-- **チャットモード**: Claude モデルからのストリーミング応答（画像添付、拡張思考、モデル選択、努力レベル調整、ダークモード、Markdown対応）
+- **チャットモード**: Claude モデルからのストリーミング応答（画像添付、拡張思考、Web検索（出典付き）、モデル選択、努力レベル調整、ダークモード、Markdown対応）
 - **コードモード**: GitHub リポジトリ参照、ファイルをコンテキストとして選択、コードについてClaudeと対話、変更をレビュー、GitHubにプッシュ
 
 機能には、IP単位のレート制限、JWT ベースのセッション管理、Vercelでのサーバーレスデプロイが含まれます。
@@ -136,6 +136,8 @@ src/
                               #   streamText + convertToModelMessages
                               #   validates modelId against ALLOWED_MODEL_IDS
                               #   applies budgetTokens (thinking) or temperature
+                              #   webSearch === true → adds anthropic web_search tool
+                              #   returns toUIMessageStreamResponse({ sendSources: true })
       code/
         route.ts              # POST — code chat endpoint with GitHub context
                               #   accepts repo/branch/files context
@@ -199,12 +201,14 @@ src/
                               #   modelRef/effortRef/thinkingRef for stale-closure safety
       MessageList.tsx         # Auto-scroll list, empty state placeholder
       MessageItem.tsx         # Renders one turn: user query + assistant response
-                              #   reasoning blocks (thinking), copy buttons
+                              #   reasoning blocks (thinking), source-url citations
+                              #   (web search 出典), copy buttons
       InputArea.tsx           # Textarea + image attach, paste image, submit
       MarkdownRenderer.tsx    # ReactMarkdown with REMARK_PLUGINS + MD_COMPONENTS
                               #   both constants defined at MODULE level (never inline)
       CodeBlock.tsx           # Prism syntax highlight, dark/light theme swap, copy
-      ModelSettings.tsx       # Effort level radio group + thinking toggle dropdown
+      ModelSettings.tsx       # Effort level radio group + thinking toggle +
+                              #   web search toggle (all models) dropdown
     code/
       CodeInterface.tsx       # GitHub integration container
                               #   handles repo/branch selection, file browsing, chat
@@ -237,6 +241,7 @@ src/
                               #   AUTH_COOKIE_NAME, GITHUB_COOKIE_NAME, GITHUB_STATE_COOKIE_NAME
                               #   TASKS_COOKIE_NAME, TASKS_FILE_PATH
                               #   COOKIE_MAX_AGE, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS
+                              #   DEFAULT_WEB_SEARCH, WEB_SEARCH_MAX_USES
                               #   ALLOWED_MODEL_IDS (derived from MODELS)
                               #   NOTE: ACCESS_CODE is NOT here — env only
     tasks/

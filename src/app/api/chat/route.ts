@@ -11,6 +11,7 @@ import {
   MODELS,
   SYSTEM_PROMPT,
   AUTH_COOKIE_NAME,
+  WEB_SEARCH_MAX_USES,
 } from '@/lib/constants'
 import type { EffortId } from '@/lib/constants'
 import type { UIMessage } from 'ai'
@@ -27,14 +28,21 @@ export async function POST(request: NextRequest) {
     return new Response('Unauthorized', { status: 401 })
   }
 
-  let body: { id?: string; messages?: UIMessage[]; modelId?: string; effort?: EffortId; thinking?: boolean }
+  let body: {
+    id?: string
+    messages?: UIMessage[]
+    modelId?: string
+    effort?: EffortId
+    thinking?: boolean
+    webSearch?: boolean
+  }
   try {
     body = await request.json()
   } catch {
     return new Response('Bad Request', { status: 400 })
   }
 
-  const { messages, modelId, effort, thinking } = body
+  const { messages, modelId, effort, thinking, webSearch } = body
 
   if (!Array.isArray(messages) || messages.length === 0) {
     return new Response('Bad Request', { status: 400 })
@@ -52,10 +60,20 @@ export async function POST(request: NextRequest) {
   const modelMeta = MODELS.find((m) => m.id === resolvedModel)
   const applyThinking = thinking === true && modelMeta?.supportsThinking === true
 
+  // Anthropic server-side web search — only enabled when the client strictly opts in
+  const applyWebSearch = webSearch === true
+
   const result = streamText({
     model: anthropic(resolvedModel),
     system: SYSTEM_PROMPT,
     messages: await convertToModelMessages(messages),
+    ...(applyWebSearch
+      ? {
+          tools: {
+            web_search: anthropic.tools.webSearch_20250305({ maxUses: WEB_SEARCH_MAX_USES }),
+          },
+        }
+      : {}),
     ...(applyThinking
       ? {
           providerOptions: {
@@ -65,5 +83,6 @@ export async function POST(request: NextRequest) {
       : { temperature: effortLevel.temperature }),
   })
 
-  return result.toUIMessageStreamResponse()
+  // sendSources surfaces web-search citations as source-url parts for the UI
+  return result.toUIMessageStreamResponse({ sendSources: true })
 }
