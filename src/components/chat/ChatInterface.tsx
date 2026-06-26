@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
 import type { FileUIPart } from 'ai'
-import { MODELS, DEFAULT_MODEL_ID, DEFAULT_EFFORT_ID } from '@/lib/constants'
+import { MODELS, DEFAULT_MODEL_ID, DEFAULT_EFFORT_ID, DEFAULT_WEB_SEARCH } from '@/lib/constants'
 import type { ModelId, EffortId } from '@/lib/constants'
 import { useDarkMode } from '@/hooks/useDarkMode'
 import { MessageList } from './MessageList'
@@ -18,6 +18,7 @@ export function ChatInterface() {
   const [selectedModel, setSelectedModel] = useState<ModelId>(DEFAULT_MODEL_ID)
   const [effort, setEffort] = useState<EffortId>(DEFAULT_EFFORT_ID)
   const [thinking, setThinking] = useState(false)
+  const [webSearch, setWebSearch] = useState(DEFAULT_WEB_SEARCH)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const { isDark, toggle: toggleTheme } = useDarkMode()
 
@@ -33,9 +34,11 @@ export function ChatInterface() {
   const modelRef = useRef(selectedModel)
   const effortRef = useRef(effort)
   const thinkingRef = useRef(thinking)
+  const webSearchRef = useRef(webSearch)
   modelRef.current = selectedModel
   effortRef.current = effort
   thinkingRef.current = thinking
+  webSearchRef.current = webSearch
 
   // Transport created once — body is a function evaluated fresh on every send
   const transport = useMemo(
@@ -46,6 +49,7 @@ export function ChatInterface() {
           modelId: modelRef.current,
           effort: effortRef.current,
           thinking: thinkingRef.current,
+          webSearch: webSearchRef.current,
         }),
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -139,8 +143,10 @@ export function ChatInterface() {
                 effort={effort}
                 thinking={thinking}
                 supportsThinking={supportsThinking}
+                webSearch={webSearch}
                 onEffortChange={setEffort}
                 onThinkingChange={setThinking}
+                onWebSearchChange={setWebSearch}
                 onClose={() => setSettingsOpen(false)}
               />
             )}

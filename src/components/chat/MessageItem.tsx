@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { UIMessage, TextUIPart, FileUIPart, ReasoningUIPart } from 'ai'
+import type { UIMessage, TextUIPart, FileUIPart, ReasoningUIPart, SourceUrlUIPart } from 'ai'
 import { MarkdownRenderer } from './MarkdownRenderer'
 import { LoadingDots } from '@/components/ui/LoadingDots'
 
@@ -26,6 +26,51 @@ function getReasoningText(message: UIMessage): string {
     .filter((p): p is ReasoningUIPart => p.type === 'reasoning')
     .map((p) => p.text)
     .join('')
+}
+
+function getSourceParts(message: UIMessage): SourceUrlUIPart[] {
+  const seen = new Set<string>()
+  return message.parts
+    .filter((p): p is SourceUrlUIPart => p.type === 'source-url')
+    .filter((p) => {
+      if (seen.has(p.url)) return false
+      seen.add(p.url)
+      return true
+    })
+}
+
+function hostname(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '')
+  } catch {
+    return url
+  }
+}
+
+function Sources({ sources }: { sources: SourceUrlUIPart[] }) {
+  return (
+    <div className="mt-3 pt-2 border-t border-[var(--border)]">
+      <p className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-widest mb-1.5">
+        出典
+      </p>
+      <ol className="flex flex-col gap-1">
+        {sources.map((s, i) => (
+          <li key={s.sourceId} className="flex items-baseline gap-1.5 text-xs">
+            <span className="text-[var(--text-muted)] select-none flex-shrink-0">{i + 1}.</span>
+            <a
+              href={s.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[var(--foreground)] underline underline-offset-2 hover:text-[var(--text-muted)] transition-colors truncate"
+            >
+              {s.title?.trim() || hostname(s.url)}
+            </a>
+            <span className="text-[var(--text-muted)] flex-shrink-0">({hostname(s.url)})</span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  )
 }
 
 function isStreamingPart(message: UIMessage): boolean {
@@ -105,6 +150,7 @@ export function MessageItem({ message, isStreaming }: MessageItemProps) {
   const text = getTextContent(message)
   const fileParts = getFileParts(message)
   const reasoningText = getReasoningText(message)
+  const sources = getSourceParts(message)
   const activelyStreaming = isStreaming && isStreamingPart(message)
 
   if (message.role === 'user') {
@@ -165,6 +211,7 @@ export function MessageItem({ message, isStreaming }: MessageItemProps) {
                   aria-hidden="true"
                 />
               )}
+              {!activelyStreaming && sources.length > 0 && <Sources sources={sources} />}
               {!activelyStreaming && text && (
                 <div className="mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                   <CopyButton text={text} />

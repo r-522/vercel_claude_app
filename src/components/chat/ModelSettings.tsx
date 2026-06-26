@@ -8,8 +8,10 @@ interface ModelSettingsProps {
   effort: EffortId
   thinking: boolean
   supportsThinking: boolean
+  webSearch: boolean
   onEffortChange: (id: EffortId) => void
   onThinkingChange: (v: boolean) => void
+  onWebSearchChange: (v: boolean) => void
   onClose: () => void
 }
 
@@ -17,8 +19,10 @@ export function ModelSettings({
   effort,
   thinking,
   supportsThinking,
+  webSearch,
   onEffortChange,
   onThinkingChange,
+  onWebSearchChange,
   onClose,
 }: ModelSettingsProps) {
   const panelRef = useRef<HTMLDivElement>(null)
@@ -131,6 +135,38 @@ export function ModelSettings({
               className={[
                 'absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white dark:bg-slate-900 shadow transition-transform',
                 thinking && supportsThinking ? 'translate-x-4' : 'translate-x-0',
+              ].join(' ')}
+            />
+          </button>
+        </div>
+      </div>
+
+      <div className="mx-3 my-1 border-t border-[var(--border)]" />
+
+      {/* Web search toggle — available on every model */}
+      <div className="px-3 py-2">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-[var(--foreground)]">Web検索</p>
+            <p className="text-[11px] text-[var(--text-muted)] mt-0.5">
+              最新情報を出典付きで検索します
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={webSearch}
+            onClick={() => onWebSearchChange(!webSearch)}
+            className={[
+              'relative flex-shrink-0 w-9 h-5 rounded-full transition-colors focus:outline-none cursor-pointer',
+              webSearch ? 'bg-slate-700 dark:bg-slate-300' : 'bg-slate-300 dark:bg-slate-600',
+            ].join(' ')}
+            aria-label="Web検索を有効にする"
+          >
+            <span
+              className={[
+                'absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white dark:bg-slate-900 shadow transition-transform',
+                webSearch ? 'translate-x-4' : 'translate-x-0',
               ].join(' ')}
             />
           </button>

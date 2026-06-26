@@ -33,6 +33,11 @@ export const EFFORT_LEVELS = [
 export type EffortId = typeof EFFORT_LEVELS[number]['id']
 export const DEFAULT_EFFORT_ID: EffortId = 'high'
 
+// Web search (Anthropic server-side tool) — off by default; user toggles per session
+export const DEFAULT_WEB_SEARCH = false
+// Max number of web searches Claude may run per request
+export const WEB_SEARCH_MAX_USES = 5
+
 // Model IDs that are allowed in the chat API (server-side validation)
 export const ALLOWED_MODEL_IDS = MODELS.map((m) => m.id) as string[]
 
