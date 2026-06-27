@@ -164,8 +164,10 @@ export function CodeChat({ repo, branch, contextFiles, onChangesExtracted }: Cod
                 effort={effort}
                 thinking={thinking}
                 supportsThinking={supportsThinking}
+                webSearch={false}
                 onEffortChange={setEffort}
                 onThinkingChange={setThinking}
+                onWebSearchChange={() => {}}
                 onClose={() => setSettingsOpen(false)}
               />
             )}
