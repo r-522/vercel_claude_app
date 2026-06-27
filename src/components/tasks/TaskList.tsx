@@ -10,9 +10,10 @@ interface TaskListProps {
   onEdit: (task: ScheduledTask) => void
   onDelete: (id: string) => Promise<void>
   onRun: (id: string) => Promise<void>
+  onViewResults: (task: ScheduledTask) => void
 }
 
-export function TaskList({ tasks, repo, onToggle, onEdit, onDelete, onRun }: TaskListProps) {
+export function TaskList({ tasks, repo, onToggle, onEdit, onDelete, onRun, onViewResults }: TaskListProps) {
   const [runningId, setRunningId] = useState<string | null>(null)
   const [togglingId, setTogglingId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
@@ -65,7 +66,7 @@ export function TaskList({ tasks, repo, onToggle, onEdit, onDelete, onRun }: Tas
 
   return (
     <div className="space-y-2 p-4">
-      <p className="text-[10px] text-[var(--text-muted)]">保存先: {repo}</p>
+      <p className="text-[10px] text-[var(--text-muted)]">管理リポジトリ: {repo}</p>
       {runResult && (
         <div className="text-xs px-2.5 py-2 rounded bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-400 flex items-center justify-between">
           <span>実行完了 — 結果: {runResult.resultPath}</span>
@@ -100,6 +101,30 @@ export function TaskList({ tasks, repo, onToggle, onEdit, onDelete, onRun }: Tas
               <div className="min-w-0">
                 <p className="text-xs font-medium text-[var(--foreground)] truncate">{task.name}</p>
                 <p className="text-[10px] text-[var(--text-muted)] mt-0.5 line-clamp-2">{task.prompt}</p>
+
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                  {task.targetRepo && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400">
+                      {task.targetRepo}
+                    </span>
+                  )}
+                  {task.schedule === 'weekly' && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-400">
+                      毎週
+                    </span>
+                  )}
+                  {task.webSearch && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-50 dark:bg-green-950 text-green-600 dark:text-green-400">
+                      Web検索
+                    </span>
+                  )}
+                  {task.stateFilePath && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400">
+                      状態管理
+                    </span>
+                  )}
+                </div>
+
                 {task.lastRunAt && (
                   <p className="text-[10px] text-[var(--text-muted)] mt-0.5">
                     最終実行: {new Date(task.lastRunAt).toLocaleString('ja-JP')}
@@ -109,6 +134,14 @@ export function TaskList({ tasks, repo, onToggle, onEdit, onDelete, onRun }: Tas
             </div>
 
             <div className="flex items-center gap-1 flex-shrink-0">
+              <button
+                onClick={() => onViewResults(task)}
+                aria-label="結果を見る"
+                title="結果を見る"
+                className="p-1 text-[var(--text-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)] rounded transition-colors"
+              >
+                <EyeIcon />
+              </button>
               <button
                 onClick={() => handleRun(task)}
                 disabled={!!runningId}
@@ -142,6 +175,15 @@ export function TaskList({ tasks, repo, onToggle, onEdit, onDelete, onRun }: Tas
         </div>
       ))}
     </div>
+  )
+}
+
+function EyeIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+      <path d="M1 6C1 6 3 2.5 6 2.5C9 2.5 11 6 11 6C11 6 9 9.5 6 9.5C3 9.5 1 6 1 6Z" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="6" cy="6" r="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   )
 }
 

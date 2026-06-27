@@ -13,6 +13,7 @@ export const RATE_LIMIT_MAX_ATTEMPTS = 10
 export const RATE_LIMIT_WINDOW_MS = 900000 // 15 minutes in ms
 
 export const MODELS = [
+  { id: 'claude-opus-4-8',           display: 'Opus 4.8',   family: 'opus',   supportsThinking: true  },
   { id: 'claude-opus-4-6',           display: 'Opus 4.6',   family: 'opus',   supportsThinking: true  },
   { id: 'claude-sonnet-4-6',         display: 'Sonnet 4.6', family: 'sonnet', supportsThinking: true  },
   { id: 'claude-haiku-4-5-20251001', display: 'Haiku 4.5',  family: 'haiku',  supportsThinking: false },
@@ -37,6 +38,10 @@ export const DEFAULT_EFFORT_ID: EffortId = 'high'
 export const DEFAULT_WEB_SEARCH = false
 // Max number of web searches Claude may run per request
 export const WEB_SEARCH_MAX_USES = 5
+
+// Task execution — web search and tool roundtrip limits
+export const TASK_WEB_SEARCH_MAX_USES = 10
+export const TASK_MAX_STEPS = 5
 
 // Model IDs that are allowed in the chat API (server-side validation)
 export const ALLOWED_MODEL_IDS = MODELS.map((m) => m.id) as string[]

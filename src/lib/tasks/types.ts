@@ -6,6 +6,11 @@ export interface ScheduledTask {
   outputPath: string
   createdAt: string
   lastRunAt?: string
+  targetRepo?: string
+  targetBranch?: string
+  webSearch?: boolean
+  schedule?: 'daily' | 'weekly'
+  stateFilePath?: string
 }
 
 export interface TasksFile {

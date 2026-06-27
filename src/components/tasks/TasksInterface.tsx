@@ -5,6 +5,8 @@ import { useGitHub } from '@/hooks/useGitHub'
 import { TaskSetup } from './TaskSetup'
 import { TaskList } from './TaskList'
 import { TaskForm } from './TaskForm'
+import { TaskResultsViewer } from './TaskResultsViewer'
+import type { TaskFormData } from './TaskForm'
 import type { ScheduledTask, TasksFile } from '@/lib/tasks/types'
 
 type ConfigState =
@@ -19,6 +21,7 @@ export function TasksInterface() {
   const [tasksLoading, setTasksLoading] = useState(false)
   const [editingTask, setEditingTask] = useState<ScheduledTask | null>(null)
   const [showAddForm, setShowAddForm] = useState(false)
+  const [viewingResultsTask, setViewingResultsTask] = useState<ScheduledTask | null>(null)
 
   const checkConfig = useCallback(async () => {
     try {
@@ -59,7 +62,7 @@ export function TasksInterface() {
     setConfig({ status: 'ready', repo, branch })
   }
 
-  const handleAddTask = async (data: { name: string; prompt: string; outputPath: string }) => {
+  const handleAddTask = async (data: TaskFormData) => {
     const res = await fetch('/api/tasks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -71,7 +74,7 @@ export function TasksInterface() {
     setShowAddForm(false)
   }
 
-  const handleEditTask = async (data: { name: string; prompt: string; outputPath: string }) => {
+  const handleEditTask = async (data: TaskFormData) => {
     if (!editingTask) return
     const res = await fetch(`/api/tasks/${editingTask.id}`, {
       method: 'PUT',
@@ -160,15 +163,24 @@ export function TasksInterface() {
             onEdit={setEditingTask}
             onDelete={handleDelete}
             onRun={handleRun}
+            onViewResults={setViewingResultsTask}
           />
         )}
       </div>
 
       {showAddForm && (
-        <TaskForm onSave={handleAddTask} onCancel={() => setShowAddForm(false)} />
+        <TaskForm onSave={handleAddTask} onCancel={() => setShowAddForm(false)} listRepos={listRepos} />
       )}
       {editingTask && (
-        <TaskForm task={editingTask} onSave={handleEditTask} onCancel={() => setEditingTask(null)} />
+        <TaskForm task={editingTask} onSave={handleEditTask} onCancel={() => setEditingTask(null)} listRepos={listRepos} />
+      )}
+      {viewingResultsTask && config.status === 'ready' && (
+        <TaskResultsViewer
+          task={viewingResultsTask}
+          configRepo={config.repo}
+          configBranch={config.branch}
+          onClose={() => setViewingResultsTask(null)}
+        />
       )}
     </div>
   )
