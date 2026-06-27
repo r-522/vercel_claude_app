@@ -58,7 +58,11 @@ export async function POST(req: NextRequest): Promise<Response> {
     return NextResponse.json({ error: 'Bad request' }, { status: 400 })
   }
 
-  const { name, prompt, outputPath } = body as { name?: string; prompt?: string; outputPath?: string }
+  const { name, prompt, outputPath, targetRepo, targetBranch, webSearch, schedule, stateFilePath } = body as {
+    name?: string; prompt?: string; outputPath?: string
+    targetRepo?: string; targetBranch?: string; webSearch?: boolean
+    schedule?: 'daily' | 'weekly'; stateFilePath?: string
+  }
   if (!name?.trim() || !prompt?.trim()) {
     return NextResponse.json({ error: 'name and prompt are required' }, { status: 400 })
   }
@@ -76,6 +80,11 @@ export async function POST(req: NextRequest): Promise<Response> {
       enabled: true,
       outputPath: outputPath?.trim() || 'results',
       createdAt: new Date().toISOString(),
+      ...(targetRepo ? { targetRepo: targetRepo.trim() } : {}),
+      ...(targetBranch ? { targetBranch: targetBranch.trim() } : {}),
+      ...(webSearch !== undefined ? { webSearch } : {}),
+      ...(schedule ? { schedule } : {}),
+      ...(stateFilePath ? { stateFilePath: stateFilePath.trim() } : {}),
     }
 
     const updated: TasksFile = {

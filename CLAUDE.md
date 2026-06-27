@@ -166,6 +166,8 @@ src/
           route.ts            # POST — create branch and push changes to GitHub
       tasks/
         route.ts              # GET / POST — fetch or add scheduled tasks (GitHub storage)
+                              #   POST accepts: name, prompt, outputPath, targetRepo,
+                              #   targetBranch, webSearch, schedule, stateFilePath
         [id]/
           route.ts            # PUT / DELETE — update or remove a specific task
         config/
@@ -173,6 +175,8 @@ src/
         run/
           [id]/
             route.ts          # POST — immediately execute a task via Claude API
+                              #   supports per-task repo targeting, web search,
+                              #   JST date injection, state file read/write
       cron/
         run-tasks/
           route.ts            # POST — Vercel Cron: run all enabled tasks (CRON_SECRET auth)
@@ -191,9 +195,15 @@ src/
       TasksInterface.tsx      # Main container for task management
                               #   checks GitHub connection + tasks_config cookie
                               #   routes to TaskSetup or TaskList
+                              #   integrates TaskResultsViewer overlay
       TaskSetup.tsx           # Initial config: select repo/branch, saves tasks_config cookie
-      TaskList.tsx            # List of tasks with toggle, run-now, edit, delete
+      TaskList.tsx            # List of tasks with toggle, run-now, edit, delete, view results
+                              #   metadata badges: target repo, schedule, web search, state
       TaskForm.tsx            # Add/edit task form (dialog overlay)
+                              #   includes RepoSelector, branch, web search toggle,
+                              #   schedule frequency, state file path
+      TaskResultsViewer.tsx   # Browse task results from GitHub (date nav + markdown viewer)
+                              #   fetches from per-task target repo via /api/github/contents
     chat/
       ChatInterface.tsx       # Main container
                               #   model/effort selector, dark toggle
@@ -242,10 +252,13 @@ src/
                               #   TASKS_COOKIE_NAME, TASKS_FILE_PATH
                               #   COOKIE_MAX_AGE, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS
                               #   DEFAULT_WEB_SEARCH, WEB_SEARCH_MAX_USES
+                              #   TASK_WEB_SEARCH_MAX_USES, TASK_MAX_STEPS
                               #   ALLOWED_MODEL_IDS (derived from MODELS)
                               #   NOTE: ACCESS_CODE is NOT here — env only
     tasks/
       types.ts                # ScheduledTask, TasksFile, TasksSettings
+      utils.ts                # getJSTDateTimeString, getJSTDateString, buildTaskPrompt,
+                              # shouldRunWeeklyTask, parseStateUpdate, stripStateBlock
     auth/
       cookies.ts              # signAuthCookie(payload) → token
                               # verifyAuthCookie(token) → payload | null
@@ -272,6 +285,7 @@ Defined in `src/lib/constants.ts`:
 
 | id | Display | Family | Thinking |
 |---|---|---|---|
+| `claude-opus-4-8` | Opus 4.8 | opus | Yes |
 | `claude-opus-4-6` | Opus 4.6 | opus | Yes |
 | `claude-sonnet-4-6` | Sonnet 4.6 | sonnet | Yes |
 | `claude-haiku-4-5-20251001` | Haiku 4.5 | haiku | No |

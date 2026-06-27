@@ -49,11 +49,10 @@ export async function PUT(
     return NextResponse.json({ error: 'Bad request' }, { status: 400 })
   }
 
-  const { name, prompt, outputPath, enabled } = body as {
-    name?: string
-    prompt?: string
-    outputPath?: string
-    enabled?: boolean
+  const { name, prompt, outputPath, enabled, targetRepo, targetBranch, webSearch, schedule, stateFilePath } = body as {
+    name?: string; prompt?: string; outputPath?: string; enabled?: boolean
+    targetRepo?: string; targetBranch?: string; webSearch?: boolean
+    schedule?: 'daily' | 'weekly'; stateFilePath?: string
   }
 
   try {
@@ -71,6 +70,11 @@ export async function PUT(
       ...(prompt !== undefined && { prompt: prompt.trim() }),
       ...(outputPath !== undefined && { outputPath: outputPath.trim() }),
       ...(enabled !== undefined && { enabled }),
+      ...(targetRepo !== undefined && { targetRepo: targetRepo.trim() }),
+      ...(targetBranch !== undefined && { targetBranch: targetBranch.trim() }),
+      ...(webSearch !== undefined && { webSearch }),
+      ...(schedule !== undefined && { schedule }),
+      ...(stateFilePath !== undefined && { stateFilePath: stateFilePath.trim() }),
     }
     file.updatedAt = new Date().toISOString()
 
