@@ -15,6 +15,7 @@ export const RATE_LIMIT_WINDOW_MS = 900000 // 15 minutes in ms
 export const MODELS = [
   { id: 'claude-opus-4-8',           display: 'Opus 4.8',   family: 'opus',   supportsThinking: true  },
   { id: 'claude-opus-4-6',           display: 'Opus 4.6',   family: 'opus',   supportsThinking: true  },
+  { id: 'claude-sonnet-5',           display: 'Sonnet 5',   family: 'sonnet', supportsThinking: true  },
   { id: 'claude-sonnet-4-6',         display: 'Sonnet 4.6', family: 'sonnet', supportsThinking: true  },
   { id: 'claude-haiku-4-5-20251001', display: 'Haiku 4.5',  family: 'haiku',  supportsThinking: false },
 ] as const
